@@ -3,7 +3,7 @@ import { DBItem } from "./interfaces/interfaces";
 import { Util } from "./util/util";
 
 export class MessageHandler {
-  regex = /\$\$ .+/;
+  regex = /^\$\$ .+/;
   util: Util;
   db: ZapFinanceDB;
 
@@ -16,10 +16,15 @@ export class MessageHandler {
     const isValid = this.regex.test(message); // Validates if message starts with $$
     if (!isValid) return;
 
-    const slugMessage = this.util.slug(message);
+    const slugMessage = this.util.slug(message); // already removes $$ and trim
+    if(slugMessage === 'help') return this.helpMessage();
     const res = this.registerExpense(slugMessage);
 
     return res;
+  }
+
+  helpMessage(){
+    return `Para registrar uma despesa, envie uma mensagem no formato:\n$$ nome-da-despesa valor`;
   }
 
   registerExpense(message: string): string | void {
