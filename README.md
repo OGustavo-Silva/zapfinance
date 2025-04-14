@@ -11,7 +11,7 @@ ZapFinance is a personal finance management tool designed to help users track ex
 
 1. Clone the repository:
   ```bash
-  git clone https://github.com/yourusername/zapfinance.git
+  git clone https://github.com/OGustavo-Silva/zapfinance.git
   ```
 2. Navigate to the project directory:
   ```bash
