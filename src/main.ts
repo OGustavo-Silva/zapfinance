@@ -1,17 +1,18 @@
 import { Client, LocalAuth } from 'whatsapp-web.js';
 import { MessageHandler } from './message-handler';
 import { Util } from './util/util'
+import { ZapFinanceDB } from './db/database';
 const qrcode = require('qrcode-terminal');
 
 export class ZapFinance {
   private ownId = process.env['OWN_CHAT_ID'];
   util = new Util();
 
-  constructor() {
+  constructor(db: ZapFinanceDB) {
     const client = new Client({
       authStrategy: new LocalAuth()
     });
-    const messageHandler = new MessageHandler(this.util);
+    const messageHandler = new MessageHandler(this.util, db);
 
     // When the client is ready, run this code (only once)
     client.once('ready', () => {

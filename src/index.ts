@@ -7,6 +7,6 @@ async function prepareConfig() {
 }
 
 prepareConfig();
-new ZapFinanceDB();
-// new ZapFinance();
+const db = new ZapFinanceDB();
+new ZapFinance(db);
 

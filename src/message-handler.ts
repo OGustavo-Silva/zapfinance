@@ -1,14 +1,20 @@
+import { ZapFinanceDB } from "./db/database";
+import { DBItem } from "./interfaces/interfaces";
 import { Util } from "./util/util";
 
 export class MessageHandler {
   regex = /\$\$ .+/;
   util: Util;
+  db: ZapFinanceDB;
 
-  constructor(util: Util) { this.util = util }
+  constructor(util: Util, db: ZapFinanceDB) { 
+    this.util = util;
+    this.db = db;
+  }
 
-  handle(message: string): string | null {
+  handle(message: string): string | void {
     const isValid = this.regex.test(message); // Validates if message starts with $$
-    if (!isValid) return null;
+    if (!isValid) return;
 
     const slugMessage = this.util.slug(message);
     const res = this.registerExpense(slugMessage);
@@ -16,12 +22,20 @@ export class MessageHandler {
     return res;
   }
 
-  registerExpense(message: string): string {
+  registerExpense(message: string): string | void {
     const [name, valueStr] = message.split('-');
 
     const value = parseFloat(valueStr);
     if (isNaN(value)) return 'Valor informado inválido!';
 
-    return `Gasto registrado: ${name} - R$ ${value.toFixed(2)}`;
+    const dbItem = this.prepareExpenseDB(name, value);
+    this.db.insertExpense(dbItem);
+  }
+
+  prepareExpenseDB(name: string, value: number): DBItem{
+    const date = new Date().toISOString();
+    const category = 'outros';
+
+    return {name, category, value, date};
   }
 }
