@@ -16,14 +16,14 @@ export class MessageHandler {
     const isValid = this.regex.test(message); // Validates if message starts with $$
     if (!isValid) return;
 
-    const slugMessage = this.util.slug(message); // already removes $$ and trim
+    // const slugMessage = this.util.slug(message); // already removes $$ and trim
 
-    if (slugMessage === 'help') return this.helpMessage();
+    if (message === 'help') return this.helpMessage();
 
-    const isCategory = slugMessage.startsWith('categoria');
+    const isCategory = message.startsWith('categoria');
     if (isCategory) this.setExpenseCategory(message);
 
-    const res = this.registerExpense(slugMessage);
+    const res = this.registerExpense(message);
 
     return res;
   }
