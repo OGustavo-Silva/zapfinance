@@ -12,9 +12,11 @@ export class MessageHandler {
     this.db = db;
   }
 
-  handle(message: string): string | void {
-    const isValid = this.regex.test(message); // Validates if message starts with $$
+  handle(FullMessage: string): string | void {
+    const isValid = this.regex.test(FullMessage); // Validates if message starts with $$
     if (!isValid) return;
+
+    const message = FullMessage.replace('$$ ', '');
 
     // const slugMessage = this.util.slug(message); // already removes $$ and trim
 
@@ -38,7 +40,7 @@ export class MessageHandler {
   }
 
   setExpenseCategory(message: string) {
-
+    console.log(message);
   }
 
   /**
@@ -47,17 +49,13 @@ export class MessageHandler {
    * @returns String if message is invalid. Void if everything is ok
    */
   registerExpense(message: string): string | void {
-    // const [name, valueStr] = message.split('-');
     const regex = /^(.*?\s)(\d+)$/;
 
-    const match = message.match(regex)
+    const match = message.match(regex);
     if (!match) return 'Mensagem inválida!';
 
-    const name = match[1].trim();
+    const name = this.util.slug(match[1].trim());
     const value = parseFloat(match[2]);
-
-    // const value = parseFloat(valueStr);
-    // if (isNaN(value)) return 'Valor informado inválido!';
 
     const dbItem = this.prepareExpenseDB(name, value);
     this.db.insertExpense(dbItem);
