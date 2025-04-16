@@ -3,7 +3,7 @@ export interface IUtil {
   sleep(ms: number): void;
 }
 
-export interface DBItem {
+export interface IDBItem {
    name: string;
    category: string;
    value: number;

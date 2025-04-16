@@ -1,5 +1,5 @@
 import { Database } from 'sqlite3';
-import { DBItem } from '../interfaces/interfaces';
+import { IDBItem } from '../interfaces/interfaces';
 
 export class ZapFinanceDB {
   private db;
@@ -17,7 +17,7 @@ export class ZapFinanceDB {
       `);
   }
 
-  insertExpense(expense: DBItem) {
+  insertExpense(expense: IDBItem) {
     try {
       const { name, category, value, date } = expense
       const insert = this.db.prepare('INSERT INTO data VALUES(null, ?, ?, ?, ?)');
