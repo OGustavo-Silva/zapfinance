@@ -21,8 +21,6 @@ export class MessageHandler {
 
     const message = FullMessage.replace('$$ ', '');
 
-    // const slugMessage = this.util.slug(message); // already removes $$ and trim
-
     if (message === 'ping') return 'pong';
 
     if (message === 'help') return this.helpMessage();

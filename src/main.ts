@@ -26,11 +26,13 @@ export class ZapFinance {
 
     // Listening to all incoming messages
     client.on('message_create', async message => {
-      const { body } = message;
+      const { from, to, body } = message;
 
-      const response = await messageHandler.handle(body);
-      this.util.sleep(75);
-      if (response) client.sendMessage(this.ownId ?? message.from, response);
+      if (from === to) {
+        this.util.sleep(45);
+        const response = await messageHandler.handle(body);
+        if (response) client.sendMessage(this.ownId ?? message.from, response);
+      }
     });
 
     // Start your client
