@@ -25,11 +25,12 @@ export class MessageHandler {
     if (message === 'help') return this.helpMessage();
 
     const isCategory = message.startsWith('categoria');
-    if (isCategory) this.setExpenseCategory(message);
+    if (isCategory) return this.setExpenseCategory(message);
 
-    const res = await this.registerExpense(message);
+    const monthlyRemind = message.startsWith('gasto mensal');
+    if(monthlyRemind) return this.registerMonthly(message);
 
-    return res;
+    return await this.registerExpense(message);
   }
 
   /**
@@ -37,20 +38,20 @@ export class MessageHandler {
    * @returns {string} Help message with instructions on how to use the bot
    */
   helpMessage(): string {
-    return `ZapFinance BOT para controle financeiro!
-    Para registrar uma despesa:\n$$ nome da despesa valor categoria(opcional)
-    Para definir a categoria de uma despesa: $$ categoria nome-da-despesa nome-da-categoria
+    return `ZapFinance BOT para controle financeiro!\n
+    Para registrar uma despesa:$$ nome da despesa valor categoria(opcional)
+    Para definir a categoria de uma despesa: $$ categoria nome-da-despesa nome-da-categoria\n
     $$ help - exibe essa mensagem de ajuda`;
   }
 
-  setExpenseCategory(message: string) {
+  async setExpenseCategory(message: string) {
     const splitMessage = message.split(' ');
-    if(splitMessage.length != 3) return 'Mensagem inválida!';
+    if(splitMessage.length !== 3) return 'Mensagem inválida!';
 
     const name = this.util.slug(splitMessage[1]);
     const category = this.util.slug(splitMessage[2]);
 
-    this.db.setCategory(name, category);
+    await this.db.setCategory(name, category);
   }
 
   /**
@@ -68,6 +69,10 @@ export class MessageHandler {
 
     const dbItem = this.prepareExpenseDB(name, value, category);
     await this.db.insertExpense(dbItem);
+  }
+
+  async registerMonthly(message: string){
+
   }
 
   /**

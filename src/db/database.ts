@@ -29,10 +29,12 @@ export class ZapFinanceDB {
   }
 
   async setCategory(name: string, category: string){
-    try{
+    return new Promise((resolve, reject) => {
+      const update = this.db.prepare('UPDATE data SET category = ? WHERE name = ?');
 
-    }catch(e){
-      console.log(e);
-    }
+      const res = update.run(category, name);
+      if(res)resolve(res);
+      else reject(res);
+    });
   }
 }
