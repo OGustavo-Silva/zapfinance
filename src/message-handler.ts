@@ -86,7 +86,7 @@ export class MessageHandler {
     const match = message.match(this.monthlyExpenseRegex);
     if (!match) return 'Mensagem inválida';
 
-    const [matchName, matchValue, matchCategory] = match;
+    const [, matchName, matchValue, matchCategory] = match;
 
     const name = this.util.slug(matchName);
     const value = parseFloat(matchValue);
