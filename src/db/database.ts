@@ -12,8 +12,8 @@ export class ZapFinanceDB {
       name TEXT,
       category TEXT,
       value REAL,
-      date TEXT
-      isMonthly INTEGER DEFAULT 0
+      date TEXT,
+      isMonthly INTEGER DEFAULT 0,
       isPaid INTEGER DEFAULT 0
       ) STRICT
       `);
@@ -23,7 +23,7 @@ export class ZapFinanceDB {
     return new Promise((resolve, reject) => {
       const { name, category, value, date } = expense;
 
-      const query = 'INSERT INTO data VALUES(null, ?, ?, ?, ?, null, null)';
+      const query = 'INSERT INTO data VALUES(null, ?, ?, ?, ?, 0, 0)';
       const insert = this.db.prepare(query);
 
       const res = insert.run(name, category, value, date);
@@ -36,7 +36,7 @@ export class ZapFinanceDB {
     return new Promise((resolve, reject) => {
       const { name, category, value, date, isMonthly } = expense;
 
-      const query = 'INSERT into data VALUES(null, ?, ?, ?, ?, ?, null)';
+      const query = 'INSERT into data VALUES(null, ?, ?, ?, ?, ?, 0)';
       const insert = this.db.prepare(query);
 
       const res = insert.run(name, category, value, date, isMonthly);

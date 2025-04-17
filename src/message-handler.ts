@@ -4,7 +4,7 @@ import { Util } from "./util/util";
 
 export class MessageHandler {
   regex = /^\$\$ .+/;
-  registerExpenseRegex = /^(.*?)(\d+)(?:\s+(.*?))?$/;
+  registerExpenseRegex = /^(.*?)\s(\d+)(?:\s+(.*?))?$/;
   monthlyExpenseRegex = /desp mensal ([a-zA-Z\s]+)(\d*)?(\s[a-zA-Z]+)?/;
 
   util: Util;
@@ -77,7 +77,12 @@ export class MessageHandler {
     await this.db.insertExpense(dbItem);
   }
 
-  async registerMonthly(message: string) {
+  /**
+   * Register a monthly expense
+   * @param {string} message 
+   * @returns String if message is invalid. Void if everything is ok
+   */
+  async registerMonthly(message: string): Promise<string | void> {
     const match = message.match(this.monthlyExpenseRegex);
     if (!match) return 'Mensagem inválida';
 
