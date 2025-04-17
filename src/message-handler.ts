@@ -27,6 +27,8 @@ export class MessageHandler {
 
     if (message === 'help') return this.helpMessage();
 
+    if(message === 'listar tudo') return JSON.stringify(await this.listAll());
+
     const isCategory = message.startsWith('categoria');
     if (isCategory) return this.setExpenseCategory(message);
 
@@ -48,6 +50,10 @@ export class MessageHandler {
     \n$$ help - exibe essa mensagem de ajuda
     $$ ping - testar conexão
     Rep: https://github.com/OGustavo-Silva/zapfinance`;
+  }
+
+  listAll(){
+    return this.db.listAll();
   }
 
   async setExpenseCategory(message: string) {

@@ -19,6 +19,24 @@ export class ZapFinanceDB {
       `);
   }
 
+  listAll(): Promise<IDBItem[]>{
+    const query = 'SELECT * FROM data';
+    return new Promise((resolve, reject) => {
+      this.db.all(query, [], (err, rows)=> {
+        if(err) reject(err);
+        
+        const res: IDBItem[] = [];
+
+        rows.forEach((row) => {
+          res.push(row as IDBItem);
+        });
+        resolve(res);
+      });
+    })
+    
+
+  }
+
   insertExpense(expense: IDBItem) {
     return new Promise((resolve, reject) => {
       const { name, category, value, date } = expense;
