@@ -1,10 +1,11 @@
 import { ZapFinanceDB } from "./db/database";
-import { IDBItem } from "./interfaces/interfaces";
+import { IDBItem, IExpense } from "./interfaces/interfaces";
 import { Util } from "./util/util";
 
 export class MessageHandler {
   regex = /^\$\$ .+/;
   registerExpenseRegex = /^(.*?)(\d+)(?:\s+(.*?))?$/;
+  monthlyExpenseRegex = /desp mensal ([a-zA-Z\s]+)(\d*)?(\s[a-zA-Z]+)?/;
 
   util: Util;
   db: ZapFinanceDB;
@@ -22,13 +23,15 @@ export class MessageHandler {
 
     // const slugMessage = this.util.slug(message); // already removes $$ and trim
 
+    if (message === 'ping') return 'pong';
+
     if (message === 'help') return this.helpMessage();
 
     const isCategory = message.startsWith('categoria');
     if (isCategory) return this.setExpenseCategory(message);
 
-    const monthlyRemind = message.startsWith('gasto mensal');
-    if(monthlyRemind) return this.registerMonthly(message);
+    const monthlyRemind = message.startsWith('desp mensal');
+    if (monthlyRemind) return this.registerMonthly(message);
 
     return await this.registerExpense(message);
   }
@@ -39,14 +42,17 @@ export class MessageHandler {
    */
   helpMessage(): string {
     return `ZapFinance BOT para controle financeiro!\n
-    Para registrar uma despesa:$$ nome da despesa valor categoria(opcional)
-    Para definir a categoria de uma despesa: $$ categoria nome-da-despesa nome-da-categoria\n
-    $$ help - exibe essa mensagem de ajuda`;
+    P/ registrar uma despesa:$$ nome da despesa valor categoria(opcional)
+    P/ definir a categoria de uma despesa: $$ categoria nome-da-despesa nome-da-categoria
+    P/ registrar uma despesa mensal: $$ desp mensal nome-da-despesa valor(opcional) categoria(opcional)
+    \n$$ help - exibe essa mensagem de ajuda
+    $$ ping - testar conexão
+    Rep: https://github.com/OGustavo-Silva/zapfinance`;
   }
 
   async setExpenseCategory(message: string) {
     const splitMessage = message.split(' ');
-    if(splitMessage.length !== 3) return 'Mensagem inválida!';
+    if (splitMessage.length !== 3) return 'Mensagem inválida!';
 
     const name = this.util.slug(splitMessage[1]);
     const category = this.util.slug(splitMessage[2]);
@@ -65,14 +71,26 @@ export class MessageHandler {
 
     const name = this.util.slug(match[1].trim());
     const value = parseFloat(match[2]);
-    const category = match[3] ? match[3]: undefined;
+    const category = match[3] ? this.util.slug(match[3]) : undefined;
 
-    const dbItem = this.prepareExpenseDB(name, value, category);
+    const dbItem = this.prepareExpenseDB({ name, value, category });
     await this.db.insertExpense(dbItem);
   }
 
-  async registerMonthly(message: string){
+  async registerMonthly(message: string) {
+    const match = message.match(this.monthlyExpenseRegex);
+    if (!match) return 'Mensagem inválida';
 
+    const [matchName, matchValue, matchCategory] = match;
+
+    const name = this.util.slug(matchName);
+    const value = parseFloat(matchValue);
+    const category = matchCategory ? this.util.slug(matchCategory) : undefined;
+
+    const isMonthly = 1;
+
+    const dbItem = this.prepareExpenseDB({ name, value, category, isMonthly });
+    await this.db.insertMonthlyExpense(dbItem);
   }
 
   /**
@@ -81,9 +99,10 @@ export class MessageHandler {
    * @param value expense value
    * @returns {IDBItem} Object to be handled on db
    */
-  prepareExpenseDB(name: string, value: number, category: string = 'outros'): IDBItem {
+  prepareExpenseDB(expense: IExpense): IDBItem {
+    const { name, value, category, isMonthly } = expense;
     const date = new Date().toISOString();
 
-    return { name, category, value, date };
+    return { name, category, value, date, isMonthly };
   }
 }

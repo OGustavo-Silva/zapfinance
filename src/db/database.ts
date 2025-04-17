@@ -13,27 +13,44 @@ export class ZapFinanceDB {
       category TEXT,
       value REAL,
       date TEXT
+      isMonthly INTEGER DEFAULT 0
+      isPaid INTEGER DEFAULT 0
       ) STRICT
       `);
   }
 
   insertExpense(expense: IDBItem) {
     return new Promise((resolve, reject) => {
-      const { name, category, value, date } = expense
-      const insert = this.db.prepare('INSERT INTO data VALUES(null, ?, ?, ?, ?)');
+      const { name, category, value, date } = expense;
+
+      const query = 'INSERT INTO data VALUES(null, ?, ?, ?, ?, null, null)';
+      const insert = this.db.prepare(query);
 
       const res = insert.run(name, category, value, date);
-      if(res)resolve(res);
+      if (res) resolve(res);
       else reject(res);
     });
   }
 
-  async setCategory(name: string, category: string){
+  insertMonthlyExpense(expense: IDBItem) {
+    return new Promise((resolve, reject) => {
+      const { name, category, value, date, isMonthly } = expense;
+
+      const query = 'INSERT into data VALUES(null, ?, ?, ?, ?, ?, null)';
+      const insert = this.db.prepare(query);
+
+      const res = insert.run(name, category, value, date, isMonthly);
+      if (res) resolve(res);
+      else reject(res);
+    })
+  }
+
+  setCategory(name: string, category: string) {
     return new Promise((resolve, reject) => {
       const update = this.db.prepare('UPDATE data SET category = ? WHERE name = ?');
 
       const res = update.run(category, name);
-      if(res)resolve(res);
+      if (res) resolve(res);
       else reject(res);
     });
   }
