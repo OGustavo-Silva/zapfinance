@@ -18,12 +18,20 @@ export class ZapFinanceDB {
   }
 
   insertExpense(expense: IDBItem) {
-    try {
+    return new Promise((resolve, reject) => {
       const { name, category, value, date } = expense
       const insert = this.db.prepare('INSERT INTO data VALUES(null, ?, ?, ?, ?)');
 
-      insert.run(name, category, value, date);
-    } catch (e) {
+      const res = insert.run(name, category, value, date);
+      if(res)resolve(res);
+      else reject(res);
+    });
+  }
+
+  async setCategory(name: string, category: string){
+    try{
+
+    }catch(e){
       console.log(e);
     }
   }
