@@ -56,8 +56,9 @@ export class MessageHandler {
 
     const name = this.util.slug(match[1].trim());
     const value = parseFloat(match[2]);
+    const category = match[3] ? match[3]: undefined;
 
-    const dbItem = this.prepareExpenseDB(name, value);
+    const dbItem = this.prepareExpenseDB(name, value, category);
     this.db.insertExpense(dbItem);
   }
 
@@ -67,9 +68,8 @@ export class MessageHandler {
    * @param value expense value
    * @returns {IDBItem} Object to be handled on db
    */
-  prepareExpenseDB(name: string, value: number): IDBItem {
+  prepareExpenseDB(name: string, value: number, category: string = 'outros'): IDBItem {
     const date = new Date().toISOString();
-    const category = 'outros';
 
     return { name, category, value, date };
   }
