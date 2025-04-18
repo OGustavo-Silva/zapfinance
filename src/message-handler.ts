@@ -25,7 +25,7 @@ export class MessageHandler {
 
     if (message === 'help') return this.helpMessage();
 
-    if(message === 'comandos') {}
+    if(message === 'comandos') return this.listCommands();
 
     if(message === 'listar tudo') return JSON.stringify(await this.listAll());
 
@@ -42,17 +42,30 @@ export class MessageHandler {
   }
 
   /**
-   * 
+   * @memberof MessageHandler
    * @returns {string} Help message with instructions on how to use the bot
    */
   helpMessage(): string {
-    return `ZapFinance BOT para controle financeiro!\n
-    P/ registrar uma despesa:$$ nome da despesa valor categoria(opcional)
+    return `P/ registrar uma despesa:$$ nome da despesa valor categoria(opcional)
     P/ definir a categoria de uma despesa: $$ categoria nome-da-despesa nome-da-categoria
     P/ registrar uma despesa mensal: $$ desp mensal nome-da-despesa valor(opcional) categoria(opcional)
     \n$$ help - exibe essa mensagem de ajuda
     $$ comandos - para listar todos os comandos
     Rep: https://github.com/OGustavo-Silva/zapfinance`;
+  }
+
+  /**
+   * @memberof MessageHandler
+   * @returns {string} String listing all BOT commands
+   */
+  listCommands(): string{
+    return `$$ ping - testa conexão
+    $$ listar tudo - exibe todas as despesas
+    $$ apagar desp id - apaga uma despesa pelo id
+    $$ nome da despesa valor categoria(opcional) - registrar nova despesa
+    $$ categoria nome-da-despesa nome-da-categoria - definir categoria de despesa por nome
+    $$ desp mensal nome-da-despesa valor(opcional) categoria(opcional) - reg despesa mensal
+    $$ help exibe mensagem básica de ajuda`
   }
 
   listAll(){
@@ -80,6 +93,7 @@ export class MessageHandler {
 
   /**
    * Register to db an expense
+   * @memberof MessageHandler
    * @param {string} message Message sent to bot with name and value of expense
    * @returns String if message is invalid. Void if everything is ok
    */
@@ -97,6 +111,7 @@ export class MessageHandler {
 
   /**
    * Register a monthly expense
+   * @memberof MessageHandler
    * @param {string} message 
    * @returns String if message is invalid. Void if everything is ok
    */
@@ -117,7 +132,7 @@ export class MessageHandler {
   }
 
   /**
-   * 
+   * @memberof MessageHandler
    * @param name expense name
    * @param value expense value
    * @returns {IDBItem} Object to be handled on db
