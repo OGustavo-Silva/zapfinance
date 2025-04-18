@@ -15,7 +15,7 @@ export class MessageHandler {
     this.db = db;
   }
 
-  async handle(FullMessage: string): Promise<string | void> {
+  handle(FullMessage: string): string | void {
     const isValid = this.regex.test(FullMessage); // Validates if message starts with $$
     if (!isValid) return;
 
@@ -27,18 +27,21 @@ export class MessageHandler {
 
     if(message === 'comandos') return this.listCommands();
 
-    if(message === 'listar tudo') return JSON.stringify(await this.listAll());
+    if(message === 'listar tudo') return JSON.stringify(this.listAll());
 
     const isCategory = message.startsWith('categoria');
-    if (isCategory) return this.setExpenseCategory(message);
+    if (isCategory) return JSON.stringify(this.setExpenseCategory(message));
 
     const monthlyRemind = message.startsWith('desp mensal');
-    if (monthlyRemind) return this.registerMonthly(message);
+    if (monthlyRemind) return JSON.stringify(this.registerMonthly(message));
 
     const isDelete = message.startsWith('apagar desp');
-    if(isDelete) return this.deleteExpense(message);
+    if(isDelete) {
+      this.deleteExpense(message);
+      return ;
+    }
 
-    return await this.registerExpense(message);
+    return JSON.stringify(this.registerExpense(message));
   }
 
   /**
@@ -68,8 +71,8 @@ export class MessageHandler {
     $$ help exibe mensagem básica de ajuda`
   }
 
-  listAll(){
-    return this.db.listAll();
+  async listAll(){
+    await this.db.listAll();
   }
 
   async deleteExpense(message: string){
