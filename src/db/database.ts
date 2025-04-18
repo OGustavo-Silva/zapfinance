@@ -72,4 +72,15 @@ export class ZapFinanceDB {
       else reject(res);
     });
   }
+
+  deleteById(id: number){
+    return new Promise((resolve, reject) => {
+      const query = 'DELETE FROM data WHERE id = ?';
+      const del = this.db.prepare(query);
+
+      const res = del.run(id);
+      if(res) resolve(res);
+      else reject(res);
+    });
+  }
 }

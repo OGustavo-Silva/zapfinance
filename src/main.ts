@@ -26,10 +26,9 @@ export class ZapFinance {
 
     // Listening to all incoming messages
     client.on('message_create', async message => {
-      const { from, to, body } = message;
+      const { from, body } = message;
 
-      if (from === to) {
-        this.util.sleep(45);
+      if (from === this.ownId) {
         const response = await messageHandler.handle(body);
         if (response) client.sendMessage(this.ownId ?? message.from, response);
       }

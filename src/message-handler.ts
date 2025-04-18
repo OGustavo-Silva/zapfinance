@@ -25,6 +25,8 @@ export class MessageHandler {
 
     if (message === 'help') return this.helpMessage();
 
+    if(message === 'comandos') {}
+
     if(message === 'listar tudo') return JSON.stringify(await this.listAll());
 
     const isCategory = message.startsWith('categoria');
@@ -32,6 +34,9 @@ export class MessageHandler {
 
     const monthlyRemind = message.startsWith('desp mensal');
     if (monthlyRemind) return this.registerMonthly(message);
+
+    const isDelete = message.startsWith('apagar desp');
+    if(isDelete) return this.deleteExpense(message);
 
     return await this.registerExpense(message);
   }
@@ -46,7 +51,7 @@ export class MessageHandler {
     P/ definir a categoria de uma despesa: $$ categoria nome-da-despesa nome-da-categoria
     P/ registrar uma despesa mensal: $$ desp mensal nome-da-despesa valor(opcional) categoria(opcional)
     \n$$ help - exibe essa mensagem de ajuda
-    $$ ping - testar conexão
+    $$ comandos - para listar todos os comandos
     Rep: https://github.com/OGustavo-Silva/zapfinance`;
   }
 
@@ -54,7 +59,16 @@ export class MessageHandler {
     return this.db.listAll();
   }
 
-  async setExpenseCategory(message: string) {
+  async deleteExpense(message: string){
+    const numMessage = message.replace('apagar desp ', '');
+    const parse = Number(numMessage);
+
+    if(isNaN(parse)) return 'Mensagem inválida';
+
+    await this.db.deleteById(parse);
+  }
+
+  async setExpenseCategory(message: string): Promise<string | void> {
     const splitMessage = message.split(' ');
     if (splitMessage.length !== 3) return 'Mensagem inválida!';
 
