@@ -10,7 +10,8 @@ export class ZapFinance {
 
   constructor(db: ZapFinanceDB) {
     const client = new Client({
-      authStrategy: new LocalAuth()
+      authStrategy: new LocalAuth(),
+      puppeteer: {args: ['--no-sandbox']}
     });
     const messageHandler = new MessageHandler(this.util, db);
 
@@ -29,7 +30,7 @@ export class ZapFinance {
       const { from, body } = message;
       console.log(from, body)
       if (from === this.ownId) {
-        const response = messageHandler.handle(body);
+        const response = await messageHandler.handle(body);
         if (response) client.sendMessage(this.ownId ?? message.from, response);
       }
     });
