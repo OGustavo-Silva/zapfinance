@@ -4,7 +4,6 @@ import { IDBItem, IExpense } from "./interfaces/interfaces";
 import { DbItemsToStringTable } from "./util/helper";
 import { Util } from "./util/util";
 
-// const COMMANDS = ['ping', 'help', 'comandos', 'listar tudo', 'categoria', 'desp mensal', 'apagar desp'];
 const COMMANDS_DESC: { [key: string]: string } = {
   'ping': 'testa conexão',
   'help': 'exibe mensagem básica de ajuda',
@@ -33,7 +32,6 @@ export class MessageHandler extends Base {
       if (!isValid) return;
 
       const message = FullMessage.replace('$$ ', '');
-      // if (!COMMANDS.includes(message)) return 'Comando inválido! Envie $$ help para ver os comandos disponíveis';
 
       if (message === 'ping') return 'pong';
 
