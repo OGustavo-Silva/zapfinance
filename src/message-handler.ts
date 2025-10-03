@@ -125,7 +125,10 @@ export class MessageHandler extends Base {
     return 'Despesa registrada';
   }
 
-  handleMonthly(message: string){
+  /**
+   * When message starts with 'desp mensal'
+   */
+  handleMonthly(message: string) {
     const monthlyExpenseRegex = /desp mensal ([a-zA-Z\s]+)(\d*)?(\s[a-zA-Z]+)?/;
 
     const match = message.match(monthlyExpenseRegex);
@@ -137,19 +140,15 @@ export class MessageHandler extends Base {
     const category = matchCategory ? this.util.slug(matchCategory) : undefined;
     const isNumber = this.isNumber(matchValue);
 
-    if(isNumber){
+    if (isNumber) {
       const value = parseFloat(matchValue);
       this.registerMonthly(name, value, category);
     }
-    else if(!isNumber && !matchValue){
+    else if (!isNumber && !matchValue) {
       return 'TODO';
       // validar mensagem com 'pago' e atualizar bd(msgs podem conter espaco no nome)
     }
     return 'Mensagem inválida';
-  }
-
-  isNumber(str: string): boolean{
-    return !isNaN(parseFloat(str)) && isFinite(parseFloat(str));
   }
 
   /**
@@ -171,5 +170,9 @@ export class MessageHandler extends Base {
     const date = new Date().toISOString();
 
     return { name, category, value, date, isMonthly };
+  }
+
+  isNumber(str: string): boolean {
+    return !isNaN(parseFloat(str)) && isFinite(parseFloat(str));
   }
 }
