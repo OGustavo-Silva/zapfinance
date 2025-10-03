@@ -1,10 +1,12 @@
 import { Database } from 'sqlite3';
 import { IDBItem } from '../interfaces/interfaces';
+import { Base } from '../base';
 
-export class ZapFinanceDB {
+export class ZapFinanceDB extends Base {
   private db;
 
   constructor() {
+    super()
     this.db = new Database('./src/db/zapfinance.db', (err) => { if (err) console.error(err.message) });
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS data(
@@ -19,21 +21,25 @@ export class ZapFinanceDB {
       `);
   }
 
-  listAll(): Promise<IDBItem[]>{
+  listAll(): Promise<IDBItem[]> {
     const query = 'SELECT * FROM data';
     return new Promise((resolve, reject) => {
-      this.db.all(query, [], (err, rows)=> {
-        if(err) reject(err);
-        
+      this.db.all(query, [], (err, rows) => {
+        if (err) {
+          this.log(`Error listing all: ${err}`);
+          reject(err);
+        }
+
         const res: IDBItem[] = [];
 
         rows.forEach((row) => {
           res.push(row as IDBItem);
         });
+        this.log(`List all executed - [${res.length}]`)
         resolve(res);
       });
     })
-    
+
 
   }
 
@@ -46,7 +52,10 @@ export class ZapFinanceDB {
 
       const res = insert.run(name, category, value, date);
       if (res) resolve(res);
-      else reject(res);
+      else {
+        this.log('Error inserting expense');
+        reject(res);
+      }
     });
   }
 
@@ -73,13 +82,13 @@ export class ZapFinanceDB {
     });
   }
 
-  deleteById(id: number){
+  deleteById(id: number) {
     return new Promise((resolve, reject) => {
       const query = 'DELETE FROM data WHERE id = ?';
       const del = this.db.prepare(query);
 
       const res = del.run(id);
-      if(res) resolve(res);
+      if (res) resolve(res);
       else reject(res);
     });
   }

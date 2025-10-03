@@ -12,6 +12,7 @@ export interface IExpense {
 }
 
 export interface IDBItem {
+  id?: number;
   name: string;
   category: string | undefined;
   value: number;

@@ -1,47 +1,63 @@
+import { Base } from "./base";
 import { ZapFinanceDB } from "./db/database";
 import { IDBItem, IExpense } from "./interfaces/interfaces";
+import { DbItemsToStringTable } from "./util/helper";
 import { Util } from "./util/util";
 
-export class MessageHandler {
-  regex = /^\$\$ .+/;
-  registerExpenseRegex = /^(.*?)\s(\d+)(?:\s+(.*?))?$/;
-  monthlyExpenseRegex = /desp mensal ([a-zA-Z\s]+)(\d*)?(\s[a-zA-Z]+)?/;
+// const COMMANDS = ['ping', 'help', 'comandos', 'listar tudo', 'categoria', 'desp mensal', 'apagar desp'];
+const COMMANDS_DESC: { [key: string]: string } = {
+  'ping': 'testa conexão',
+  'help': 'exibe mensagem básica de ajuda',
+  'comandos': 'lista todos os comandos',
+  'listar tudo': 'exibe todas as despesas',
+  'categoria nome-da-despesa nome-da-categoria': 'define categoria de despesa por nome',
+  'desp mensal nome-da-despesa valor(opcional) categoria(opcional)': 'registra despesa mensal',
+  'apagar desp id': 'apaga uma despesa pelo id',
+  'nome da despesa valor categoria(opcional)': 'registra nova despesa'
+}
 
+export class MessageHandler extends Base {
+  shouldHandleMsgRegex = /^\$\$ .+/;
   util: Util;
   db: ZapFinanceDB;
 
   constructor(util: Util, db: ZapFinanceDB) {
+    super();
     this.util = util;
     this.db = db;
   }
 
-  handle(FullMessage: string): string | void {
-    const isValid = this.regex.test(FullMessage); // Validates if message starts with $$
-    if (!isValid) return;
+  async handle(FullMessage: string): Promise<string | void> {
+    try {
+      const isValid = this.shouldHandleMsgRegex.test(FullMessage); // Validates if message starts with $$
+      if (!isValid) return;
 
-    const message = FullMessage.replace('$$ ', '');
+      const message = FullMessage.replace('$$ ', '');
+      // if (!COMMANDS.includes(message)) return 'Comando inválido! Envie $$ help para ver os comandos disponíveis';
 
-    if (message === 'ping') return 'pong';
+      if (message === 'ping') return 'pong';
 
-    if (message === 'help') return this.helpMessage();
+      if (message === 'help') return this.helpMessage();
 
-    if(message === 'comandos') return this.listCommands();
+      if (message === 'comandos') return this.listCommands();
 
-    if(message === 'listar tudo') return JSON.stringify(this.listAll());
+      if (message === 'listar tudo') return await this.listAll();
 
-    const isCategory = message.startsWith('categoria');
-    if (isCategory) return JSON.stringify(this.setExpenseCategory(message));
+      const isCategory = message.startsWith('categoria');
+      if (isCategory) return this.setExpenseCategory(message);
 
-    const monthlyRemind = message.startsWith('desp mensal');
-    if (monthlyRemind) return JSON.stringify(this.registerMonthly(message));
+      const monthlyRemind = message.startsWith('desp mensal');
+      if (monthlyRemind) return this.registerMonthly(message);
 
-    const isDelete = message.startsWith('apagar desp');
-    if(isDelete) {
-      this.deleteExpense(message);
-      return ;
+      const isDelete = message.startsWith('apagar desp');
+      if (isDelete) return await this.deleteExpense(message);
+
+      return await this.registerExpense(message);
+    } catch (error) {
+      this.log(`Error handling message: ${error}`);
+      return 'Ocorreu um erro ao processar sua mensagem.';
     }
 
-    return JSON.stringify(this.registerExpense(message));
   }
 
   /**
@@ -61,27 +77,23 @@ export class MessageHandler {
    * @memberof MessageHandler
    * @returns {string} String listing all BOT commands
    */
-  listCommands(): string{
-    return `$$ ping - testa conexão
-    $$ listar tudo - exibe todas as despesas
-    $$ apagar desp id - apaga uma despesa pelo id
-    $$ nome da despesa valor categoria(opcional) - registrar nova despesa
-    $$ categoria nome-da-despesa nome-da-categoria - definir categoria de despesa por nome
-    $$ desp mensal nome-da-despesa valor(opcional) categoria(opcional) - reg despesa mensal
-    $$ help exibe mensagem básica de ajuda`
+  listCommands(): string {
+    return Object.entries(COMMANDS_DESC).map(([command, desc]) => `\n$$ ${command} - ${desc}`).join('');
   }
 
-  async listAll(){
-    await this.db.listAll();
+  async listAll() {
+    const allData = await this.db.listAll();
+    return DbItemsToStringTable(allData);
   }
 
-  async deleteExpense(message: string){
+  async deleteExpense(message: string): Promise<string> {
     const numMessage = message.replace('apagar desp ', '');
     const parse = Number(numMessage);
 
-    if(isNaN(parse)) return 'Mensagem inválida';
+    if (isNaN(parse)) return 'Mensagem inválida';
 
     await this.db.deleteById(parse);
+    return 'Despesa apagada';
   }
 
   async setExpenseCategory(message: string): Promise<string | void> {
@@ -92,6 +104,7 @@ export class MessageHandler {
     const category = this.util.slug(splitMessage[2]);
 
     await this.db.setCategory(name, category);
+    return 'Categoria definida';
   }
 
   /**
@@ -101,7 +114,8 @@ export class MessageHandler {
    * @returns String if message is invalid. Void if everything is ok
    */
   async registerExpense(message: string): Promise<string | void> {
-    const match = message.match(this.registerExpenseRegex);
+    const registerExpenseRegex = /^(.*?)\s(\d+)(?:\s+(.*?))?$/;
+    const match = message.match(registerExpenseRegex);
     if (!match) return 'Mensagem inválida!';
 
     const name = this.util.slug(match[1].trim());
@@ -110,16 +124,16 @@ export class MessageHandler {
 
     const dbItem = this.prepareExpenseDB({ name, value, category });
     await this.db.insertExpense(dbItem);
+    return 'Despesa registrada';
   }
 
   /**
-   * Register a monthly expense
-   * @memberof MessageHandler
-   * @param {string} message 
-   * @returns String if message is invalid. Void if everything is ok
+   * Registers a monthly expense
    */
   async registerMonthly(message: string): Promise<string | void> {
-    const match = message.match(this.monthlyExpenseRegex);
+    const monthlyExpenseRegex = /desp mensal ([a-zA-Z\s]+)(\d*)?(\s[a-zA-Z]+)?/;
+
+    const match = message.match(monthlyExpenseRegex);
     if (!match) return 'Mensagem inválida';
 
     const [, matchName, matchValue, matchCategory] = match;
@@ -132,13 +146,11 @@ export class MessageHandler {
 
     const dbItem = this.prepareExpenseDB({ name, value, category, isMonthly });
     await this.db.insertMonthlyExpense(dbItem);
+    return 'Despesa mensal registrada';
   }
 
   /**
-   * @memberof MessageHandler
-   * @param name expense name
-   * @param value expense value
-   * @returns {IDBItem} Object to be handled on db
+   * Converts expense data do DB format
    */
   prepareExpenseDB(expense: IExpense): IDBItem {
     const { name, value, category, isMonthly } = expense;
