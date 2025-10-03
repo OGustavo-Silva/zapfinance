@@ -45,7 +45,7 @@ export class MessageHandler extends Base {
       if (isCategory) return this.setExpenseCategory(message);
 
       const monthlyRemind = message.startsWith('desp mensal');
-      if (monthlyRemind) return this.registerMonthly(message);
+      if (monthlyRemind) return this.handleMonthly(message);
 
       const isDelete = message.startsWith('apagar desp');
       if (isDelete) return await this.deleteExpense(message);
@@ -125,10 +125,7 @@ export class MessageHandler extends Base {
     return 'Despesa registrada';
   }
 
-  /**
-   * Registers a monthly expense
-   */
-  async registerMonthly(message: string): Promise<string | void> {
+  handleMonthly(message: string){
     const monthlyExpenseRegex = /desp mensal ([a-zA-Z\s]+)(\d*)?(\s[a-zA-Z]+)?/;
 
     const match = message.match(monthlyExpenseRegex);
@@ -137,9 +134,28 @@ export class MessageHandler extends Base {
     const [, matchName, matchValue, matchCategory] = match;
 
     const name = this.util.slug(matchName);
-    const value = parseFloat(matchValue);
     const category = matchCategory ? this.util.slug(matchCategory) : undefined;
+    const isNumber = this.isNumber(matchValue);
 
+    if(isNumber){
+      const value = parseFloat(matchValue);
+      this.registerMonthly(name, value, category);
+    }
+    else if(!isNumber && !matchValue){
+      return 'TODO';
+      // validar mensagem com 'pago' e atualizar bd(msgs podem conter espaco no nome)
+    }
+    return 'Mensagem inválida';
+  }
+
+  isNumber(str: string): boolean{
+    return !isNaN(parseFloat(str)) && isFinite(parseFloat(str));
+  }
+
+  /**
+   * Registers a monthly expense
+   */
+  async registerMonthly(name: string, value: number, category?: string): Promise<string | void> {
     const isMonthly = 1;
 
     const dbItem = this.prepareExpenseDB({ name, value, category, isMonthly });
