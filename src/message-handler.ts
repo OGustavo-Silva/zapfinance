@@ -101,8 +101,8 @@ export class MessageHandler extends Base {
     const name = this.util.slug(splitMessage[1]);
     const category = this.util.slug(splitMessage[2]);
 
-    await this.db.setCategory(name, category);
-    return 'Categoria definida';
+    await this.db.updateByFilter({name}, {category});
+    return `Categoria definida para ${name}`;
   }
 
   /**
@@ -128,8 +128,8 @@ export class MessageHandler extends Base {
   /**
    * When message starts with 'desp mensal'
    */
-  handleMonthly(message: string) {
-    const monthlyExpenseRegex = /desp mensal ([a-zA-Z\s]+)(\d*)?(\s[a-zA-Z]+)?/;
+  async handleMonthly(message: string) {
+    const monthlyExpenseRegex = /desp mensal ([a-zA-Z]+)\s(pago|\d*|)?(\s[a-zA-Z]+)?/;
 
     const match = message.match(monthlyExpenseRegex);
     if (!match) return 'Mensagem inválida';
@@ -142,11 +142,11 @@ export class MessageHandler extends Base {
 
     if (isNumber) {
       const value = parseFloat(matchValue);
-      this.registerMonthly(name, value, category);
+      return this.registerMonthly(name, value, category);
     }
-    else if (!isNumber && !matchValue) {
-      return 'TODO';
-      // validar mensagem com 'pago' e atualizar bd(msgs podem conter espaco no nome)
+    else if (!isNumber && matchValue.toLowerCase() === 'pago') {
+      await this.setMonthlyAsPaid(name);
+      return `${name} marcado como pago!`
     }
     return 'Mensagem inválida';
   }
@@ -160,6 +160,14 @@ export class MessageHandler extends Base {
     const dbItem = this.prepareExpenseDB({ name, value, category, isMonthly });
     await this.db.insertMonthlyExpense(dbItem);
     return 'Despesa mensal registrada';
+  }
+
+  async setMonthlyAsPaid(name: string) {
+    const date = new Date().toISOString();
+
+    this.db.updateByFilter(
+      { name }, { isPaid: 1, date }
+    )
   }
 
   /**

@@ -72,13 +72,40 @@ export class ZapFinanceDB extends Base {
     })
   }
 
-  setCategory(name: string, category: string) {
+  /**
+   * Update rows in `data` table using a WHERE filter and a set of changes.
+   * - filter: Partial<IDBItem> (or { id?: number }) used for WHERE clause (must provide at least one field)
+   * - changes: Partial<IDBItem> fields to set (must provide at least one field)
+   * Returns a Promise resolving to the sqlite3 statement result.
+   */
+  updateByFilter(filter: Partial<IDBItem> & { id?: number }, changes: Partial<IDBItem>) {
     return new Promise((resolve, reject) => {
-      const update = this.db.prepare('UPDATE data SET category = ? WHERE name = ?');
+      try {
+        const allowed = ['name', 'category', 'value', 'date', 'isMonthly', 'isPaid'];
 
-      const res = update.run(category, name);
-      if (res) resolve(res);
-      else reject(res);
+        const setKeys = Object.keys(changes).filter((k) => allowed.includes(k));
+        if (setKeys.length === 0) return reject(new Error('No valid fields to update'));
+
+        const whereKeys = Object.keys(filter).filter((k) => allowed.includes(k) || k === 'id');
+        if (whereKeys.length === 0) return reject(new Error('No WHERE filter provided'));
+
+        const setClause = setKeys.map((k) => `${k} = ?`).join(', ');
+        const whereClause = whereKeys.map((k) => `${k} = ?`).join(' AND ');
+
+        const setValues = setKeys.map((k) => (changes as any)[k]);
+        const whereValues = whereKeys.map((k) => (filter as any)[k]);
+        const sql = `UPDATE data SET ${setClause} WHERE ${whereClause}`;
+
+        const stmt = this.db.prepare(sql);
+        const res = stmt.run(...setValues, ...whereValues);
+        if (res) {
+          this.log(`Update executed: ${sql} -- params: ${JSON.stringify([...setValues, ...whereValues])}`);
+          resolve(res);
+        } else reject(res);
+      } catch (err) {
+        this.log(`Error updating: ${err}`);
+        reject(err);
+      }
     });
   }
 
