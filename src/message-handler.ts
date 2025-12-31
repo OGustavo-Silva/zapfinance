@@ -10,7 +10,7 @@ const COMMANDS_DESC: { [key: string]: string } = {
   'comandos': 'lista todos os comandos',
   'listar tudo': 'exibe todas as despesas',
   'categoria nome-da-despesa nome-da-categoria': 'define categoria de despesa por nome',
-  'desp mensal nome-da-despesa valor(opcional) categoria(opcional)': 'registra despesa mensal',
+  'desp mensal nome-da-despesa valor(ou pago) data vencimento(opcional - dd/yy)  categoria(opcional)': 'registra despesa mensal',
   'apagar desp id': 'apaga uma despesa pelo id',
   'nome da despesa valor categoria(opcional)': 'registra nova despesa'
 }
@@ -40,6 +40,8 @@ export class MessageHandler extends Base {
       if (message === 'comandos') return this.listCommands();
 
       if (message === 'listar tudo') return await this.listAll();
+
+      if(message === 'listar mensais') return await this.listMonthly();
 
       const isCategory = message.startsWith('categoria');
       if (isCategory) return this.setExpenseCategory(message);
@@ -94,6 +96,10 @@ export class MessageHandler extends Base {
     return 'Despesa apagada';
   }
 
+  async listMonthly(){
+
+  }
+
   async setExpenseCategory(message: string): Promise<string | void> {
     const splitMessage = message.split(' ');
     if (splitMessage.length !== 3) return 'Mensagem inválida!';
@@ -129,7 +135,7 @@ export class MessageHandler extends Base {
    * When message starts with 'desp mensal'
    */
   async handleMonthly(message: string) {
-    const monthlyExpenseRegex = /desp mensal ([a-zA-Z]+)\s(pago|\d*|)?(\s[a-zA-Z]+)?/;
+    const monthlyExpenseRegex = /desp mensal ([a-zA-Z]+)\s(pago|\d*|)?\s?([0-9]{2}\/[0-9]{2})?(\s[a-zA-Z]+)?/;
 
     const match = message.match(monthlyExpenseRegex);
     if (!match) return 'Mensagem inválida';
@@ -155,7 +161,7 @@ export class MessageHandler extends Base {
    * Registers a monthly expense
    */
   async registerMonthly(name: string, value: number, category?: string): Promise<string | void> {
-    const isMonthly = 1;
+    const isMonthly = true;
 
     const dbItem = this.prepareExpenseDB({ name, value, category, isMonthly });
     await this.db.insertMonthlyExpense(dbItem);
@@ -166,7 +172,7 @@ export class MessageHandler extends Base {
     const date = new Date().toISOString();
 
     this.db.updateByFilter(
-      { name }, { isPaid: 1, date }
+      { name }, { isPaid: true, date }
     )
   }
 

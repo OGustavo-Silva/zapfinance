@@ -47,7 +47,7 @@ export class ZapFinanceDB extends Base {
     return new Promise((resolve, reject) => {
       const { name, category, value, date } = expense;
 
-      const query = 'INSERT INTO data VALUES(null, ?, ?, ?, ?, 0, 0)';
+      const query = 'INSERT INTO data VALUES(null, ?, ?, ?, ?, false, false, \'-\')';
       const insert = this.db.prepare(query);
 
       const res = insert.run(name, category, value, date);
@@ -61,14 +61,34 @@ export class ZapFinanceDB extends Base {
 
   insertMonthlyExpense(expense: IDBItem) {
     return new Promise((resolve, reject) => {
-      const { name, category, value, date, isMonthly } = expense;
+      const { name, category, value, date, isMonthly, dueDate } = expense;
 
-      const query = 'INSERT into data VALUES(null, ?, ?, ?, ?, ?, 0)';
+      const query = 'INSERT into data VALUES(null, ?, ?, ?, ?, ?, false, ?)';
       const insert = this.db.prepare(query);
 
-      const res = insert.run(name, category, value, date, isMonthly);
+      const res = insert.run(name, category, value, date, isMonthly, dueDate);
       if (res) resolve(res);
       else reject(res);
+    })
+  }
+
+  getAllMonthly(): Promise<IDBItem[]>{
+    const query = 'SELECT * FROM data WHERE isMonthly = true';
+    return new Promise((resolve, reject) => {
+      this.db.all(query, [], (err, rows) => {
+         if (err) {
+          this.log(`Error listing all monthly: ${err}`);
+          reject(err);
+        }
+
+        const res: IDBItem[] = [];
+
+        rows.forEach((row) => {
+          res.push(row as IDBItem);
+        });
+        this.log(`List all executed - [${res.length}]`)
+        resolve(res);
+      })
     })
   }
 

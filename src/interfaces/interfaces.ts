@@ -7,8 +7,8 @@ export interface IExpense {
   name: string;
   category: string | undefined;
   value: number;
-  isMonthly?: number;
-  isPaid?: number
+  isMonthly?: boolean;
+  isPaid?: boolean
 }
 
 export interface IDBItem {
@@ -17,6 +17,7 @@ export interface IDBItem {
   category: string | undefined;
   value: number;
   date: string;
-  isMonthly?: number;
-  isPaid?: number
+  isMonthly?: boolean;
+  isPaid?: boolean;
+  dueDate?: string;
 }
