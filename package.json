@@ -1,0 +1,43 @@
+{
+  "name": "whatsapp-finance-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx src/app-bootstrap/index.ts",
+    "dev": "tsx watch src/app-bootstrap/index.ts",
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OGustavo-Silva/zapfinance.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/OGustavo-Silva/zapfinance/issues"
+  },
+  "homepage": "https://github.com/OGustavo-Silva/zapfinance#readme",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc10",
+    "better-sqlite3": "^12.9.0",
+    "dotenv": "^17.4.2",
+    "node-cron": "^4.2.1",
+    "qrcode-terminal": "^0.12.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^25.6.2",
+    "@types/node-cron": "^3.0.11",
+    "@types/qrcode-terminal": "^0.12.2",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  },
+  "vitest": {
+    "environment": "node"
+  }
+}
