@@ -9,6 +9,7 @@ export type CommandType =
   | 'QUERY_LISTAR'
   | 'QUERY_VENCIMENTOS'
   | 'QUERY_PERIODO'
+  | 'PING'
   | 'UNKNOWN';
 
 export interface ExpenseOneoffCmd {
@@ -56,6 +57,10 @@ export interface QueryPeriodoCmd {
   year: number;
 }
 
+export interface PingCommand {
+  type: 'PING'
+}
+
 export interface UnknownCmd {
   type: 'UNKNOWN';
   keyword: string;
@@ -70,6 +75,7 @@ export type ParsedCommand =
   | QueryListarCmd
   | QueryVencimentosCmd
   | QueryPeriodoCmd
+  | PingCommand
   | UnknownCmd;
 
 export interface ParseError {

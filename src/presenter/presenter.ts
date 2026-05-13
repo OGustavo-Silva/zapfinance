@@ -119,6 +119,10 @@ export const presenter = {
     return `❌ ${message}\nExemplo: *${example}*`;
   },
 
+  pingCommand(): string {
+    return 'PONG';
+  },
+
   unknownCommand(): string {
     return [
       '❓ Comando não reconhecido. Comandos disponíveis:',

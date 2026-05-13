@@ -22,9 +22,10 @@ export function parseMessage(raw: string): ParseResult | null {
   const keyword = tokens[0].toLowerCase();
 
   // Queries sem parâmetros
-  if (keyword === 'resumo')      return ok({ type: 'QUERY_RESUMO' });
-  if (keyword === 'listar')      return ok({ type: 'QUERY_LISTAR' });
+  if (keyword === 'resumo') return ok({ type: 'QUERY_RESUMO' });
+  if (keyword === 'listar') return ok({ type: 'QUERY_LISTAR' });
   if (keyword === 'vencimentos') return ok({ type: 'QUERY_VENCIMENTOS' });
+  if (keyword === 'ping') return ok({ type: 'PING' })
 
   // $$ periodo MM/AAAA
   if (keyword === 'periodo') {

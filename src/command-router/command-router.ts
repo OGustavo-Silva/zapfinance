@@ -32,6 +32,7 @@ export class CommandRouter {
         case 'QUERY_LISTAR':      return this.finance.queryListar();
         case 'QUERY_VENCIMENTOS': return this.finance.queryVencimentos();
         case 'QUERY_PERIODO':     return this.finance.queryPeriodo(cmd);
+        case 'PING':              return presenter.pingCommand();
         case 'UNKNOWN':           return presenter.unknownCommand();
       }
     } catch (err) {
