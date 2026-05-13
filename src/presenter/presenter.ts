@@ -127,7 +127,7 @@ export const presenter = {
     return [
       '❓ Comando não reconhecido. Comandos disponíveis:',
       '  *$$ {nome} {valor} {categoria?}* — despesa avulsa',
-      '  *$$ mensal {nome} {valor} {DD/MM?} {categoria?}* — despesa mensal',
+      '  *$$ mensal {nome} {valor} {DD?} {categoria?}* — despesa mensal',
       '  *$$ pago {nome}* — marcar mensal como paga',
       '  *$$ categoria {nome|id} {categoria}* — alterar categoria',
       '  *$$ resumo* — resumo do mês',

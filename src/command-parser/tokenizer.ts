@@ -83,6 +83,23 @@ export function looksLikeAmount(token: string): boolean {
 }
 
 /**
+ * Verifica se um token parece um dia do mês (D ou DD).
+ */
+export function looksLikeDayOfMonth(token: string): boolean {
+  return /^\d{1,2}$/.test(token);
+}
+
+/**
+ * Valida e retorna o dia do mês de um token D/DD.
+ */
+export function parseDayOfMonth(raw: string): number | undefined {
+  if (!looksLikeDayOfMonth(raw)) return undefined;
+  const day = parseInt(raw, 10);
+  if (day < 1 || day > 31) return undefined;
+  return day;
+}
+
+/**
  * Verifica se um token parece ser data DD/MM.
  */
 export function looksLikeDayMonth(token: string): boolean {

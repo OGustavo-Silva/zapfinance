@@ -53,18 +53,19 @@ export class FinanceService {
       ? findOrCreateCategory(this.db, cmd.category).id
       : null;
 
+    const now = new Date();
+    const competenceMonth = now.getMonth() + 1;
+    const competenceYear = now.getFullYear();
+
     const monthly = insertExpenseMonthly(this.db, {
       name: cmd.name,
       amount_cents: cmd.amountCents,
       due_day: cmd.dueDay,
-      due_month: cmd.dueMonth,
+      due_month: competenceMonth,
       category_id: categoryId,
     });
 
     // Criar ciclo para a competência atual se inexistente
-    const now = new Date();
-    const competenceMonth = now.getMonth() + 1;
-    const competenceYear = now.getFullYear();
     const dueDate = buildDueDate(cmd.dueDay, competenceMonth, competenceYear);
 
     upsertCycle(this.db, {
@@ -74,7 +75,7 @@ export class FinanceService {
       due_date: dueDate,
     });
 
-    return presenter.expenseMonthlyCreated(cmd.name, cmd.amountCents, cmd.dueDay, cmd.dueMonth, cmd.category);
+    return presenter.expenseMonthlyCreated(cmd.name, cmd.amountCents, cmd.dueDay, competenceMonth, cmd.category);
   }
 
   markPaid(cmd: MarkPaidCmd): string {

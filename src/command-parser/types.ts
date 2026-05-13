@@ -24,7 +24,6 @@ export interface ExpenseMonthlyCmd {
   name: string;
   amountCents: number;
   dueDay: number;
-  dueMonth: number;
   category: string | null;
 }
 

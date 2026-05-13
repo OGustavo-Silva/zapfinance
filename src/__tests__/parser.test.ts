@@ -53,15 +53,23 @@ describe('Parser — despesa avulsa', () => {
 });
 
 describe('Parser — despesa mensal', () => {
-  it('parse com vencimento e categoria', () => {
-    const r = parseMessage('$$ mensal netflix 55,90 10/05 streaming');
+  it('parse com vencimento (dia) e categoria', () => {
+    const r = parseMessage('$$ mensal netflix 55,90 10 streaming');
     expect(r?.ok).toBe(true);
     if (!r?.ok) return;
     if (r.command.type !== 'EXPENSE_MONTHLY') return;
     expect(r.command.name).toBe('netflix');
     expect(r.command.amountCents).toBe(5590);
     expect(r.command.dueDay).toBe(10);
-    expect(r.command.dueMonth).toBe(5);
+    expect(r.command.category).toBe('streaming');
+  });
+
+  it('mantém compatibilidade com DD/MM usando apenas o dia', () => {
+    const r = parseMessage('$$ mensal netflix 55,90 10/05 streaming');
+    expect(r?.ok).toBe(true);
+    if (!r?.ok) return;
+    if (r.command.type !== 'EXPENSE_MONTHLY') return;
+    expect(r.command.dueDay).toBe(10);
     expect(r.command.category).toBe('streaming');
   });
 
@@ -71,11 +79,10 @@ describe('Parser — despesa mensal', () => {
     if (!r?.ok) return;
     if (r.command.type !== 'EXPENSE_MONTHLY') return;
     expect(r.command.dueDay).toBe(1);
-    expect(r.command.dueMonth).toBe(1);
   });
 
-  it('erro com data inválida', () => {
-    const r = parseMessage('$$ mensal netflix 55,90 40/13');
+  it('erro com dia inválido', () => {
+    const r = parseMessage('$$ mensal netflix 55,90 40');
     expect(r?.ok).toBe(false);
   });
 });

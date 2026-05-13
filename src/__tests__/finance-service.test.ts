@@ -105,17 +105,22 @@ describe('FinanceService — despesa mensal e pagamento', () => {
   });
 
   it('insere mensal e cria ciclo OPEN', () => {
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+
     const reply = svc.addExpenseMonthly({
       type: 'EXPENSE_MONTHLY',
       name: 'netflix',
       amountCents: 5590,
       dueDay: 10,
-      dueMonth: 5,
       category: 'streaming',
     });
     expect(reply).toContain('netflix');
     expect(reply).toContain('R$ 55,90');
-    expect(reply).toContain('10/05');
+    expect(reply).toContain(`10/${String(currentMonth).padStart(2, '0')}`);
+
+    const monthly = db.prepare("SELECT due_month FROM expenses_monthly WHERE name = 'netflix'").get() as { due_month: number } | undefined;
+    expect(monthly?.due_month).toBe(currentMonth);
 
     const cycle = db.prepare("SELECT * FROM monthly_cycles WHERE status = 'OPEN'").get();
     expect(cycle).toBeTruthy();
@@ -127,7 +132,6 @@ describe('FinanceService — despesa mensal e pagamento', () => {
       name: 'netflix',
       amountCents: 5590,
       dueDay: 10,
-      dueMonth: 5,
       category: null,
     });
     const reply = svc.markPaid({ type: 'MARK_PAID', name: 'netflix' });
@@ -140,8 +144,8 @@ describe('FinanceService — despesa mensal e pagamento', () => {
   });
 
   it('permite mensais com mesmo nome (sem upsert)', () => {
-    svc.addExpenseMonthly({ type: 'EXPENSE_MONTHLY', name: 'internet', amountCents: 10000, dueDay: 5, dueMonth: 1, category: null });
-    svc.addExpenseMonthly({ type: 'EXPENSE_MONTHLY', name: 'internet', amountCents: 12000, dueDay: 5, dueMonth: 1, category: null });
+    svc.addExpenseMonthly({ type: 'EXPENSE_MONTHLY', name: 'internet', amountCents: 10000, dueDay: 5, category: null });
+    svc.addExpenseMonthly({ type: 'EXPENSE_MONTHLY', name: 'internet', amountCents: 12000, dueDay: 5, category: null });
 
     const rows = db.prepare("SELECT * FROM expenses_monthly WHERE name = 'internet'").all();
     expect(rows.length).toBe(2);

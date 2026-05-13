@@ -1,4 +1,4 @@
-import { tokenize, parseAmountToCents, parseDayMonth, parseMonthYear, looksLikeAmount, looksLikeDayMonth } from './tokenizer';
+import { tokenize, parseAmountToCents, parseDayMonth, parseMonthYear, parseDayOfMonth, looksLikeAmount, looksLikeDayMonth, looksLikeDayOfMonth } from './tokenizer';
 import type { ParseResult, ParsedCommand } from './types';
 
 const PREFIX = '$$';
@@ -55,7 +55,7 @@ export function parseMessage(raw: string): ParseResult | null {
     return ok({ type: 'SET_CATEGORY', ref, category });
   }
 
-  // $$ mensal {nome} {valor} {vencimento DD/MM?} {categoria?}
+  // $$ mensal {nome} {valor} {vencimento DD?} {categoria?}
   if (keyword === 'mensal') {
     return parseMonthlyCommand(tokens.slice(1));
   }
@@ -66,13 +66,13 @@ export function parseMessage(raw: string): ParseResult | null {
 
 function parseMonthlyCommand(args: string[]): ParseResult {
   if (args.length < 2) {
-    return err('Informe nome e valor.', '$$ mensal netflix 55,90 10/05 streaming');
+    return err('Informe nome e valor.', '$$ mensal netflix 55,90 10(dia de vencimento) streaming');
   }
 
   // Encontrar o índice do valor (primeiro token que parece dinheiro)
   const amountIdx = args.findIndex(t => looksLikeAmount(t));
   if (amountIdx === -1) {
-    return err('Valor monetário não encontrado.', '$$ mensal netflix 55,90 10/05 streaming');
+    return err('Valor monetário não encontrado.', '$$ mensal netflix 55,90 10(dia de vencimento) streaming');
   }
 
   const name = args.slice(0, amountIdx).join(' ').trim();
@@ -86,15 +86,19 @@ function parseMonthlyCommand(args: string[]): ParseResult {
   const rest = args.slice(amountIdx + 1);
 
   let dueDay = 1;
-  let dueMonth = 1;
   let category: string | null = null;
   let restIdx = 0;
 
-  if (rest.length > 0 && looksLikeDayMonth(rest[0])) {
+  if (rest.length > 0 && looksLikeDayOfMonth(rest[0])) {
+    const day = parseDayOfMonth(rest[0]);
+    if (!day) return err('Dia de vencimento inválido. Use DD.', '$$ mensal netflix 55,90 10');
+    dueDay = day;
+    restIdx = 1;
+  } else if (rest.length > 0 && looksLikeDayMonth(rest[0])) {
+    // Compatibilidade retroativa: se vier DD/MM, usamos apenas o dia.
     const dm = parseDayMonth(rest[0]);
-    if (!dm) return err('Data de vencimento inválida. Use DD/MM.', '$$ mensal netflix 55,90 10/05');
+    if (!dm) return err('Data de vencimento inválida. Use DD.', '$$ mensal netflix 55,90 10');
     dueDay = dm.day;
-    dueMonth = dm.month;
     restIdx = 1;
   }
 
@@ -102,7 +106,7 @@ function parseMonthlyCommand(args: string[]): ParseResult {
     category = rest.slice(restIdx).join(' ').trim() || null;
   }
 
-  return ok({ type: 'EXPENSE_MONTHLY', name, amountCents, dueDay, dueMonth, category });
+  return ok({ type: 'EXPENSE_MONTHLY', name, amountCents, dueDay, category });
 }
 
 function parseOneoffCommand(args: string[]): ParseResult {
